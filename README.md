@@ -1,2 +1,2 @@
 # SmartShelf
-Real-Time Inventory &amp; Supply Chain Tracker
+Real-Time Inventory and Supply Chain Tracker
