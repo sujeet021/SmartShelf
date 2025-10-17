@@ -1,6 +1,10 @@
 fastapi
-uvicorn
-sqlalchemy
-pymysql
-pymongo
-python-dotenv
+uvicorn[standard]
+SQLAlchemy>=1.4
+asyncpg
+alembic
+pydantic
+python-jose
+passlib[bcrypt]
+psycopg2-binary
+APScheduler
