@@ -1,24 +1,16 @@
-version: '3.8'
 services:
   db:
-image: postgres:15
-environment:
-POSTGRES_USER: postgres
-POSTGRES_PASSWORD: password
-POSTGRES_DB: inventory_db
-ports:
-- "5432:5432"
+    image: postgres:15
+    container_name: inventory_db
+    restart: always
+    environment:
+      POSTGRES_USER: akshay
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: inventory_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
 volumes:
-- db-data:/var/lib/postgresql/data
-backend:
-build: .
-volumes:
-- ./:/app
-env_file: .env
-depends_on:
-- db
-ports:
-- "8000:8000"
-command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-volumes:
-db-data:
+  postgres_data:
