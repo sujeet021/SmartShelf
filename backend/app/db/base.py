@@ -1,3 +1,4 @@
+
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
 from app.core.config import settings
@@ -8,9 +9,12 @@ AsyncSessionLocal = sessionmaker(async_engine, class_=AsyncSession, expire_on_co
 Base = declarative_base()
 
 
+print("Connecting to DB:", settings.DATABASE_URL)
 
 
 async def init_db():
 # create tables in dev (use migrations in prod)
     async with async_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+print("Connecting to DB:", settings.DATABASE_URL)

@@ -4,6 +4,8 @@ from app.core.config import settings
 from app.db.base import async_engine, init_db
 from app.api.v1 import auth, items, inventory, orders, alerts, restocks
 from app.core.tasks import scheduler
+# in main.py
+from app.core.config import settings
 
 
 app = FastAPI(title="Inventory Storage Management - Backend")

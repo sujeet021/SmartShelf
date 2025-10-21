@@ -1,9 +1,11 @@
-from pydantic import BaseSettings
+# ✅ new
+from pydantic_settings import BaseSettings
+
 
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Inventory Storage Management"
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:password@localhost:5432/inventory_db"
+    DATABASE_URL: str = "postgresql+asyncpg://akshay:password123@localhost:5432/inventory_db"
     JWT_SECRET: str = "change-this-secret"
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24

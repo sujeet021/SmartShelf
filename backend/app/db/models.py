@@ -1,9 +1,40 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, Enum, JSON, UniqueConstraint
+from app.db.base import Base
+from sqlalchemy.orm import relationship
+
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, Enum, JSON,UniqueConstraint, func
+
 category = Column(String, nullable=True)
 unit = Column(String, default='pcs')
 created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
+
+import enum
+
+class OrderStatus(enum.Enum):
+    placed = "placed"
+    fulfilled = "fulfilled"
+    cancelled = "cancelled"
+    # Add more status values if your logic/requirements need them
+
+class RestockStatus(enum.Enum):
+    requested = "requested"
+    fulfilled = "fulfilled"
+    cancelled = "cancelled"
+    # Add any additional statuses as your application requires
+
+
+class Item(Base):
+    __tablename__ = 'items'
+    id = Column(Integer, primary_key=True, index=True)
+    sku = Column(String, nullable=False)
+    name = Column(String, nullable=False)
+    category = Column(String, nullable=True)
+    unit = Column(String, default='pcs')
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    # Relationships
+    inventory = relationship('Inventory', back_populates='item')
+    order_lines = relationship('OrderLine', back_populates='item')
 
 
 class Inventory(Base):
@@ -11,6 +42,8 @@ class Inventory(Base):
     id = Column(Integer, primary_key=True, index=True)
     item_id = Column(Integer, ForeignKey('items.id'), nullable=False)
     area_id = Column(Integer, ForeignKey('areas.id'), nullable=False)
+    area = relationship('Area', back_populates='inventory')
+    item = relationship('Item', back_populates='inventory')
     quantity = Column(Integer, nullable=False, default=0)
     threshold = Column(Integer, nullable=False, default=0)
     safety_stock = Column(Integer, default=0)
@@ -22,6 +55,16 @@ item = relationship('Item')
 area = relationship('Area')
 
 
+class Area(Base):
+    __tablename__ = 'areas'
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    city = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Optional: add relationships if needed for Inventory/Orders
+    inventory = relationship('Inventory', back_populates='area', cascade='all, delete-orphan')
+    orders = relationship('Order', back_populates='area', cascade='all, delete-orphan')
 
 
 class Order(Base):
@@ -29,9 +72,10 @@ class Order(Base):
     id = Column(Integer, primary_key=True, index=True)
     order_reference = Column(String, unique=True, nullable=True)
     area_id = Column(Integer, ForeignKey('areas.id'), nullable=False)
+    area = relationship('Area', back_populates='orders')
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     status = Column(Enum(OrderStatus), default=OrderStatus.placed)
-    metadata = Column(JSON, nullable=True)
+    order_metadata = Column(JSON, nullable=True)
 
 
 area = relationship('Area')
@@ -45,6 +89,7 @@ class OrderLine(Base):
     id = Column(Integer, primary_key=True, index=True)
     order_id = Column(Integer, ForeignKey('orders.id'), nullable=False)
     item_id = Column(Integer, ForeignKey('items.id'), nullable=False)
+    item = relationship('Item', back_populates='order_lines')
     quantity = Column(Integer, nullable=False)
     price = Column(Integer, nullable=True)
 
