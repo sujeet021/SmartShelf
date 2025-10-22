@@ -1,6 +1,7 @@
 # ✅ new
 from pydantic_settings import BaseSettings
-
+# 👇 ADDED: Import ConfigDict to replace the inner Config class
+from pydantic import ConfigDict
 
 
 class Settings(BaseSettings):
@@ -13,9 +14,8 @@ class Settings(BaseSettings):
     LEAD_TIME_DAYS: int = 2
     SAFETY_FACTOR: float = 1.25
 
-
-    class Config:
-        env_file = ".env"
+    # 👇 FIXED: Replaced deprecated inner Config class with model_config
+    model_config = ConfigDict(env_file = ".env")
 
 
 settings = Settings()
