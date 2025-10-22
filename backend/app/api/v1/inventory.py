@@ -38,5 +38,44 @@ async def list_inventory(session=Depends(get_session), low_stock: bool = Query(F
     if low_stock:
         invs = await list_low_stock(session)
         return [InventoryRead.model_validate(i) for i in invs]
-    # Implement listing all inventory if needed or return empty list
-    return []
+    
+    # Return all inventory records
+    from app.db.models import Inventory
+    from sqlalchemy import select
+    
+    result = await session.execute(select(Inventory).order_by(Inventory.id))
+    inventory = result.scalars().all()
+    return [InventoryRead.model_validate(inv) for inv in inventory]
+
+@router.get('/low-stock', response_model=list[InventoryRead])
+async def get_low_stock(session=Depends(get_session)):
+    invs = await list_low_stock(session)
+    return [InventoryRead.model_validate(i) for i in invs]
+
+@router.put('/{inventory_id}', response_model=InventoryRead)
+async def update_inventory(
+    inventory_id: int,
+    inventory_update: dict,
+    session=Depends(get_session)
+):
+    # This is a simplified update - you might want to implement proper update logic
+    from app.db.models import Inventory
+    from sqlalchemy import select
+    
+    result = await session.execute(select(Inventory).where(Inventory.id == inventory_id))
+    inv = result.scalar_one_or_none()
+    
+    if not inv:
+        raise HTTPException(status_code=404, detail='Inventory not found')
+    
+    # Update fields if provided
+    if 'quantity' in inventory_update:
+        inv.quantity = inventory_update['quantity']
+    if 'threshold' in inventory_update:
+        inv.threshold = inventory_update['threshold']
+    if 'safety_stock' in inventory_update:
+        inv.safety_stock = inventory_update['safety_stock']
+    
+    await session.commit()
+    await session.refresh(inv)
+    return InventoryRead.model_validate(inv)
