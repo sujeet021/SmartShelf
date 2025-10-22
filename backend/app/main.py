@@ -4,10 +4,11 @@ from app.core.config import settings
 from app.db.base import async_engine, init_db
 from app.api.v1 import auth, items, inventory, orders, alerts, restocks
 from app.core.tasks import scheduler
+from app.api.v1 import items
+
 
 
 app = FastAPI(title="Inventory Storage Management - Backend")
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -17,8 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# include routers (✅ This is the correct, clean structure)
+# include routers
 app.include_router(auth.router, prefix="/api/v1/auth")
 app.include_router(items.router, prefix="/api/v1/items")
 app.include_router(inventory.router, prefix="/api/v1/inventory")

@@ -13,8 +13,10 @@ print("Connecting to DB:", settings.DATABASE_URL)
 
 
 async def init_db():
-# create tables in dev (use migrations in prod)
+    print("Running DB create_all()")
     async with async_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    print("DB tables created or confirmed")
+
 
 print("Connecting to DB:", settings.DATABASE_URL)

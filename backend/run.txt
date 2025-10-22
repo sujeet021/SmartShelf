@@ -1,5 +1,10 @@
+source venv/bin/activate   
+
 docker-compose up --build
 
 docker-compose up -d 
 
 uvicorn app.main:app --reload  
+
+test
+pytest -v app/tests/test_restocks.py

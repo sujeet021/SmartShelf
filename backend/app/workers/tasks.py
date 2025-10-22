@@ -12,11 +12,9 @@ async def recalc_thresholds_job():
 
 async def check_low_stock_job():
     async with AsyncSessionLocal() as session:
-        q = await session.execute(Inventory.__table__.select())
-        rows = q.fetchall()
-        for r in rows:
-            inv_id = r._mapping['id']
-            q2 = await session.execute(Inventory.__table__.select().where(Inventory.id==inv_id))
-            inv = q2.scalars().first()
+        from sqlalchemy import select
+        q = await session.execute(select(Inventory))
+        inventory_items = q.scalars().all()
+        for inv in inventory_items:
             if inv.quantity < inv.threshold:
                 await check_and_create_restock_for_inventory(inv)

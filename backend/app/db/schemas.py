@@ -1,6 +1,40 @@
 from pydantic import BaseModel, ConfigDict
 from typing import Optional, List
 from datetime import datetime
+from pydantic import BaseModel, ConfigDict
+from typing import Optional
+from datetime import datetime
+from pydantic import BaseModel, ConfigDict
+from typing import Optional
+from datetime import datetime
+
+class AlertRead(BaseModel):
+    id: int
+    inventory_id: int
+    item_id: int
+    area_id: int
+    type: str
+    created_at: datetime
+    resolved: bool
+    resolved_at: Optional[datetime]
+    payload: Optional[dict]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class RestockOrderRead(BaseModel):
+    id: int
+    inventory_id: int
+    item_id: int
+    area_id: int
+    quantity_requested: int
+    status: str
+    created_at: datetime
+    updated_at: Optional[datetime]
+    expected_delivery_date: Optional[datetime]
+    external_ref: Optional[str]
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 # --- Area Schemas ---
