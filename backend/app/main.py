@@ -4,8 +4,6 @@ from app.core.config import settings
 from app.db.base import async_engine, init_db
 from app.api.v1 import auth, items, inventory, orders, alerts, restocks
 from app.core.tasks import scheduler
-# in main.py
-from app.core.config import settings
 
 
 app = FastAPI(title="Inventory Storage Management - Backend")
@@ -20,7 +18,7 @@ app.add_middleware(
 )
 
 
-# include routers
+# include routers (✅ This is the correct, clean structure)
 app.include_router(auth.router, prefix="/api/v1/auth")
 app.include_router(items.router, prefix="/api/v1/items")
 app.include_router(inventory.router, prefix="/api/v1/inventory")
@@ -29,15 +27,11 @@ app.include_router(alerts.router, prefix="/api/v1/alerts")
 app.include_router(restocks.router, prefix="/api/v1/restocks")
 
 
-
-
 @app.on_event("startup")
 async def startup_event():
-# initialize DB (create tables in dev) and start scheduler
+    # initialize DB (create tables in dev) and start scheduler
     await init_db()
     scheduler.start()
-
-
 
 
 @app.on_event("shutdown")

@@ -1,28 +1,17 @@
 from app.db.base import Base
 from sqlalchemy.orm import relationship
-
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, Enum, JSON,UniqueConstraint, func
-
-category = Column(String, nullable=True)
-unit = Column(String, default='pcs')
-created_at = Column(DateTime(timezone=True), server_default=func.now())
-
-
-
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, Enum, JSON, UniqueConstraint, func
 import enum
 
 class OrderStatus(enum.Enum):
     placed = "placed"
     fulfilled = "fulfilled"
     cancelled = "cancelled"
-    # Add more status values if your logic/requirements need them
 
 class RestockStatus(enum.Enum):
     requested = "requested"
     fulfilled = "fulfilled"
     cancelled = "cancelled"
-    # Add any additional statuses as your application requires
-
 
 class Item(Base):
     __tablename__ = 'items'
@@ -32,28 +21,9 @@ class Item(Base):
     category = Column(String, nullable=True)
     unit = Column(String, default='pcs')
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    # Relationships
+
     inventory = relationship('Inventory', back_populates='item')
     order_lines = relationship('OrderLine', back_populates='item')
-
-
-class Inventory(Base):
-    __tablename__ = 'inventory'
-    id = Column(Integer, primary_key=True, index=True)
-    item_id = Column(Integer, ForeignKey('items.id'), nullable=False)
-    area_id = Column(Integer, ForeignKey('areas.id'), nullable=False)
-    area = relationship('Area', back_populates='inventory')
-    item = relationship('Item', back_populates='inventory')
-    quantity = Column(Integer, nullable=False, default=0)
-    threshold = Column(Integer, nullable=False, default=0)
-    safety_stock = Column(Integer, default=0)
-    last_updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-    __table_args__ = (UniqueConstraint('item_id', 'area_id', name='uix_item_area'),)
-
-
-item = relationship('Item')
-area = relationship('Area')
-
 
 class Area(Base):
     __tablename__ = 'areas'
@@ -62,43 +32,45 @@ class Area(Base):
     city = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    # Optional: add relationships if needed for Inventory/Orders
     inventory = relationship('Inventory', back_populates='area', cascade='all, delete-orphan')
     orders = relationship('Order', back_populates='area', cascade='all, delete-orphan')
 
+class Inventory(Base):
+    __tablename__ = 'inventory'
+    id = Column(Integer, primary_key=True, index=True)
+    item_id = Column(Integer, ForeignKey('items.id'), nullable=False)
+    area_id = Column(Integer, ForeignKey('areas.id'), nullable=False)
+    quantity = Column(Integer, nullable=False, default=0)
+    threshold = Column(Integer, nullable=False, default=0)
+    safety_stock = Column(Integer, default=0)
+    last_updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    __table_args__ = (UniqueConstraint('item_id', 'area_id', name='uix_item_area'),)
+
+    item = relationship('Item', back_populates='inventory')
+    area = relationship('Area', back_populates='inventory')
 
 class Order(Base):
     __tablename__ = 'orders'
     id = Column(Integer, primary_key=True, index=True)
     order_reference = Column(String, unique=True, nullable=True)
     area_id = Column(Integer, ForeignKey('areas.id'), nullable=False)
-    area = relationship('Area', back_populates='orders')
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     status = Column(Enum(OrderStatus), default=OrderStatus.placed)
     order_metadata = Column(JSON, nullable=True)
 
-
-area = relationship('Area')
-lines = relationship('OrderLine', back_populates='order')
-
-
-
+    area = relationship('Area', back_populates='orders')
+    lines = relationship('OrderLine', back_populates='order')
 
 class OrderLine(Base):
     __tablename__ = 'order_lines'
     id = Column(Integer, primary_key=True, index=True)
     order_id = Column(Integer, ForeignKey('orders.id'), nullable=False)
     item_id = Column(Integer, ForeignKey('items.id'), nullable=False)
-    item = relationship('Item', back_populates='order_lines')
     quantity = Column(Integer, nullable=False)
     price = Column(Integer, nullable=True)
 
-
-order = relationship('Order', back_populates='lines')
-item = relationship('Item')
-
-
-
+    order = relationship('Order', back_populates='lines')
+    item = relationship('Item', back_populates='order_lines')
 
 class Alert(Base):
     __tablename__ = 'alerts'
@@ -111,9 +83,6 @@ class Alert(Base):
     resolved = Column(Boolean, default=False)
     resolved_at = Column(DateTime(timezone=True), nullable=True)
     payload = Column(JSON, nullable=True)
-
-
-
 
 class RestockOrder(Base):
     __tablename__ = 'restock_orders'
